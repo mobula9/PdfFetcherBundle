@@ -1,0 +1,26 @@
+{
+    "name": "lucascherifi/pdf-fetcher-bundle",
+    "description": "A Symfony bundle to fetch PDF around the web",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Lucas CHERIFI",
+            "email": "lucas@cherifi.info"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "jonnyw/php-phantomjs": "4.*"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "PhantomInstaller\\Installer::installPhantomJS"
+        ],
+        "post-update-cmd": [
+            "PhantomInstaller\\Installer::installPhantomJS"
+        ]
+    },
+    "config": {
+        "bin-dir": "bin"
+    }
+}
