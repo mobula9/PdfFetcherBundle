@@ -2,18 +2,17 @@
     "name": "lucascherifi/pdf-fetcher-bundle",
     "description": "A Symfony bundle to fetch PDF around the web",
     "license": "MIT",
-    "autoload": {
-        "psr-4": {
-            "Kasifi\\PdfFetcherBundle\\": ""
-        }
-    },
     "authors": [
         {
             "name": "Lucas CHERIFI",
             "email": "lucas@cherifi.info"
         }
     ],
-    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "Kasifi\\PdfFetcherBundle\\": ""
+        }
+    },
     "require": {
         "jonnyw/php-phantomjs": "4.*",
         "guzzlehttp/guzzle": "@stable"
