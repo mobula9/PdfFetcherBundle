@@ -1,0 +1,12 @@
+parameters:
+    kasifi_pdf_fetcher.logger: "@logger"
+
+services:
+    kasifi_pdf_fetcher.fetcher:
+      class : Kasifi\PdfFetcherBundle\Fetcher
+      arguments:
+        - "%kasifi_pdf_fetcher.logger%"
+#    kasifi_pdf_fetcher.fetch_processors.cipav:
+#      class : Kasifi\PdfFetcherBundle\Processor\CipavProcessor
+#      tags:
+#        -  { name: kasifi_pdf_fetcher.fetch_processor }
