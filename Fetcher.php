@@ -6,26 +6,14 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Exception;
 use Kasifi\PdfFetcherBundle\Processor\AbstractProcessor;
 use Kasifi\PdfFetcherBundle\Processor\ProcessorInterface;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerInterface;
 
-class Fetcher implements LoggerAwareInterface
+class Fetcher
 {
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
     /** @var AbstractProcessor */
     private $processor;
 
     /** @var ProcessorInterface[] */
     private $availableProcessors = [];
-
-    public function setLogger(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
-    }
 
     /**
      * @param AbstractProcessor $processor

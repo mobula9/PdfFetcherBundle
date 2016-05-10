@@ -14,7 +14,7 @@
         }
     },
     "require": {
-        "jonnyw/php-phantomjs": "4.*",
+        "jonnyw/php-phantomjs": "^4",
         "fabpot/goutte": "^3",
         "behat/transliterator": "^1.1"
     },

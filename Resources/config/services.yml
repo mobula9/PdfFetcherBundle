@@ -5,10 +5,6 @@ parameters:
 services:
     kasifi_pdf_fetcher.fetcher:
         class: Kasifi\PdfFetcherBundle\Fetcher
-        tags:
-          -  { name: monolog.logger, channel: "%kasifi_pdf_fetcher.logger_channel%" }
-        calls:
-          - [setLogger, ['@logger']]
 
     kasifi_pdf_fetcher.document_store:
         class: Kasifi\PdfFetcherBundle\EventListener\CrawlFinishedListener
