@@ -4,36 +4,35 @@ namespace Kasifi\PdfFetcherBundle;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Exception;
+use Kasifi\PdfFetcherBundle\Processor\AbstractProcessor;
 use Kasifi\PdfFetcherBundle\Processor\ProcessorInterface;
+use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
-class Fetcher {
+class Fetcher implements LoggerAwareInterface
+{
     /**
      * @var LoggerInterface
      */
     private $logger;
 
-    /** @var ProcessorInterface */
+    /** @var AbstractProcessor */
     private $processor;
 
     /** @var ProcessorInterface[] */
     private $availableProcessors = [];
 
-    /**
-     *
-     * @param LoggerInterface $logger
-     */
-    public function __construct(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
 
     /**
-     * @param ProcessorInterface $processor
+     * @param AbstractProcessor $processor
      */
-    public function addAvailableProcessor(ProcessorInterface $processor)
+    public function addAvailableProcessor(AbstractProcessor $processor)
     {
-        $this->availableProcessors[$processor->getConfiguration()['id']] = $processor;
+        $this->availableProcessors[$processor->getId()] = $processor;
     }
 
     /**
@@ -53,11 +52,11 @@ class Fetcher {
     }
 
     /**
-     * @param ProcessorInterface $processor
+     * @param string $processorId
      */
-    public function setProcessor(ProcessorInterface $processor)
+    public function selectProcessor($processorId)
     {
-        $this->processor = $processor;
+        $this->processor = $this->availableProcessors[$processorId];
     }
 
     /**
@@ -66,8 +65,8 @@ class Fetcher {
      *
      * @throws Exception
      */
-    public function fetch()
+    public function fetchDocuments()
     {
-        // TODO
+        $this->processor->fetchDocuments();
     }
 }

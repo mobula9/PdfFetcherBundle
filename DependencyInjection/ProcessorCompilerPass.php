@@ -13,13 +13,13 @@ class ProcessorCompilerPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container)
     {
-        if (!$container->has('kasifi_pdffetcher.fetcher')) {
+        if (!$container->has('kasifi_pdf_fetcher.fetcher')) {
             return;
         }
 
-        $definition = $container->findDefinition('kasifi_pdffetcher.fetcher');
+        $definition = $container->findDefinition('kasifi_pdf_fetcher.fetcher');
 
-        $taggedServices = $container->findTaggedServiceIds('kasifi_pdffetcher.fetch_processor');
+        $taggedServices = $container->findTaggedServiceIds('kasifi_pdf_fetcher.fetch_processor');
         foreach ($taggedServices as $id => $tags) {
             $definition->addMethodCall('addAvailableProcessor', [new Reference($id)]);
         }

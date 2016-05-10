@@ -20,9 +20,10 @@ class FetchCommand extends ContainerAwareCommand
         // Init
         $container = $this->getContainer();
         $fetcher = $container->get('kasifi_pdf_fetcher.fetcher');
+        $fetcher->selectProcessor('cipav');
         $io = new SymfonyStyle($input, $output);
 
-        $fetcher->fetch();
-        $io->success('Fetched.');
+        $fetcher->fetchDocuments();
+        $io->success('Document(s) fetched.');
     }
 }

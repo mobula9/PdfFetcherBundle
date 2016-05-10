@@ -1,12 +1,23 @@
 parameters:
-    kasifi_pdf_fetcher.logger: "@logger"
+    kasifi_pdf_fetcher.logger_channel: main
+    kasifi_pdf_fetcher.fetch_processors.cipav.login: mylogin
+    kasifi_pdf_fetcher.fetch_processors.cipav.password: mypassword
 
 services:
     kasifi_pdf_fetcher.fetcher:
-      class : Kasifi\PdfFetcherBundle\Fetcher
+      class: Kasifi\PdfFetcherBundle\Fetcher
+      tags:
+        -  { name: monolog.logger, channel: "%kasifi_pdf_fetcher.logger_channel%" }
+      calls:
+         - [setLogger, ['@logger']]
+
+    kasifi_pdf_fetcher.fetch_processors.cipav:
+      class : Kasifi\PdfFetcherBundle\Processor\CipavProcessor
       arguments:
-        - "%kasifi_pdf_fetcher.logger%"
-#    kasifi_pdf_fetcher.fetch_processors.cipav:
-#      class : Kasifi\PdfFetcherBundle\Processor\CipavProcessor
-#      tags:
-#        -  { name: kasifi_pdf_fetcher.fetch_processor }
+        login: "%kasifi_pdf_fetcher.fetch_processors.cipav.login%"
+        password: "%kasifi_pdf_fetcher.fetch_processors.cipav.password%"
+      tags:
+        -  { name: kasifi_pdf_fetcher.fetch_processor }
+        -  { name: monolog.logger, channel: "%kasifi_pdf_fetcher.logger_channel%" }
+      calls:
+         - [setLogger, ['@logger']]

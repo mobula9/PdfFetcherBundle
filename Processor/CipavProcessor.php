@@ -2,44 +2,65 @@
 
 namespace Kasifi\PdfFetcherBundle\Processor;
 
-use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\DomCrawler\Crawler;
 
 class CipavProcessor extends AbstractProcessor implements ProcessorInterface
 {
-//    protected $configuration = [
-//        'id' => 'lcl',
-//        'name' => 'LCL - Compte courant particulier',
-//        'startConditions' => ['/ DATE\s+LIBELLE\s+/'],
-//        'endConditions' => ['/Page \d \/ \d/', '/LCL vous informe/'],
-//        'rowMergeColumnTokens' => [0],
-//        'rowSkipConditions' => ['ANCIEN SOLDE', 'TOTAUX', 'SOLDE EN EUROS', 'SOLDE INTERMEDIAIRE A'],
-//        'rowsToSkip' => [0],
-//    ];
-//
-//    /**
-//     * @param ArrayCollection $data
-//     *
-//     * @return ArrayCollection
-//     */
-//    public function format(ArrayCollection $data)
-//    {
-//        $data = $data->map(function ($item) {
-//            // Date
-//            $dateRaw = $item[2];
-//            $date = new \DateTime();
-//            $date->setDate(2000 + (int) substr($dateRaw, 6, 2), (int) substr($dateRaw, 3, 2), (int) substr($dateRaw, 0, 2));
-//            $date->setTime(12, 0, 0);
-//            // Transaction
-//            $transaction = $this->frenchTransactionFormatter($item[3], isset($item[4]) ? $item[4] : null);
-//
-//            return [
-//                'date'  => $date,
-//                'label' => $item[1],
-//                'value' => $transaction['value'],
-//                'debit' => $transaction['debit'],
-//            ];
-//        });
-//
-//        return $data;
-//    }
+    /**
+     * @var string
+     */
+    private $login;
+
+    /**
+     * @var string
+     */
+    private $password;
+
+    public function __construct($login, $password)
+    {
+
+        $this->login = $login;
+        $this->password = $password;
+    }
+
+    public function getId() {
+        return 'cipav';
+    }
+
+    public function getName() {
+        return 'CIPAV Document fetcher';
+    }
+
+    /**
+     * @return Crawler
+     */
+    public function login() {
+        $crawler = $this->client->request('GET', 'https://portail.cipav-retraite.fr/moncompte/login.xhtml');
+        $form = $crawler->selectButton('Se connecter')->form();
+        $form['jusername'] = $this->login;
+        $form['jpassword'] = $this->password;
+        $this->logger->info('Fill login form', ['login' => $this->login]);
+        return $this->client->submit($form);
+    }
+
+    /**
+     * @param Crawler $successPage
+     */
+    public function crawl(Crawler $successPage = null) {
+
+        // Go to document list
+        $link = $successPage->selectLink('Mes Documents')->link();
+        $crawler = $this->client->click($link);
+
+        // Parse table
+        $crawler->filter('.TableStandard tr')->each(function (Crawler $node, $i) {
+            if ($i > 0) {
+                $link = $node->selectLink('Télécharger')->link();
+                $content = $this->downloadDocument($link->getUri(), $this->client->getResponse()->getHeaders());
+                $date = $node->filter('td')->first()->text();
+                $name = $node->filter('td')->eq(1)->text();
+                $this->storeDocument(['date' => $date, 'name' => $name], $content);
+            }
+        });
+    }
 }

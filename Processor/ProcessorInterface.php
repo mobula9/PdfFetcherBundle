@@ -1,23 +1,30 @@
 <?php
 
 namespace Kasifi\PdfFetcherBundle\Processor;
-
-use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\DomCrawler\Crawler;
 
 /**
  * Interface ProcessorInterface.
  */
 interface ProcessorInterface
 {
-//    /**
-//     * @return array
-//     */
-//    public function getConfiguration();
-//
-//    /**
-//     * @param ArrayCollection $data
-//     *
-//     * @return ArrayCollection
-//     */
-//    public function format(ArrayCollection $data);
+    /**
+     * @return string
+     */
+    public function getId();
+
+    /**
+     * @return string
+     */
+    public function getName();
+
+    /**
+     * @return Crawler|null
+     */
+    public function login();
+
+    /**
+     * @param Crawler $successPage
+     */
+    public function crawl(Crawler $successPage = null);
 }
