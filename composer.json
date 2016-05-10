@@ -15,7 +15,7 @@
     },
     "require": {
         "jonnyw/php-phantomjs": "4.*",
-        "fabpot/goutte": "@stable"
+        "fabpot/goutte": "^3"
     },
     "scripts": {
         "post-install-cmd": [
