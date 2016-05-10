@@ -52,14 +52,17 @@ class CipavProcessor extends AbstractProcessor implements ProcessorInterface
      */
     public function crawl(Crawler $successPage = null)
     {
-        // Go to document list
+
+        // Crawl document list
+        $this->logger->info('Crawl page', ['name' => 'Mes documents']);
         $link = $successPage->selectLink('Mes Documents')->link();
         $crawler = $this->client->click($link);
 
         // Parse table
-        $crawler->filter('.TableStandard tr')->each(function (Crawler $node, $i) {
+        $items = $crawler->filter('.TableStandard tr');
+        $this->logger->info('Item(s) found', ['count' => count($items) - 1]);
+        $items->each(function (Crawler $node, $i) {
             if ($i > 0) {
-
                 // download file
                 $link = $node->selectLink('Télécharger')->link();
                 $documentData = $this->downloadDocument($link);

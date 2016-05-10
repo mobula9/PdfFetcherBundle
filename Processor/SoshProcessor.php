@@ -52,13 +52,16 @@ class SoshProcessor extends AbstractProcessor implements ProcessorInterface
      */
     public function crawl(Crawler $successPage = null)
     {
-        // Go to history
+        // Crawl to history page
+        $this->logger->info('Crawl page', ['name' => 'Historique']);
         $crawler = $this->client->request('GET', 'https://espaceclientv3.orange.fr/?page=factures-historique');
 
         // Parse list
-        $crawler->filter('.factures li')->each(function (Crawler $node, $i) {
+        $items = $crawler->filter('.factures li');
+        $this->logger->info('Item(s) found', ['count' => count($items)]);
+        $items->each(function (Crawler $node) {
             // download file
-            $link = $node->selectLink('ma facture du')->link(); // .colonneTelecharger a
+            $link = $node->selectLink('ma facture du')->link();
             $documentData = $this->downloadDocument($link);
 
             // add meta
