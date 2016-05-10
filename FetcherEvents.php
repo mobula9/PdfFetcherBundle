@@ -6,9 +6,5 @@ namespace Kasifi\PdfFetcherBundle;
  */
 final class FetcherEvents
 {
-    /**
-     * @Event("Kasifi\PdfFetcherBundle\Event\CrawlFinishedEvent")
-     */
     const CRAWL_FINISHED = 'kasifi_pdf_fetcher.events.crawl_finished';
-
 }
