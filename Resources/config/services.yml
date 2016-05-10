@@ -1,23 +1,31 @@
 parameters:
     kasifi_pdf_fetcher.logger_channel: main
-    kasifi_pdf_fetcher.fetch_processors.cipav.login: mylogin
-    kasifi_pdf_fetcher.fetch_processors.cipav.password: mypassword
+    kasifi_pdf_fetcher.document_store.base_path: "%kernel.root_dir%/data/documents"
 
 services:
     kasifi_pdf_fetcher.fetcher:
-      class: Kasifi\PdfFetcherBundle\Fetcher
-      tags:
-        -  { name: monolog.logger, channel: "%kasifi_pdf_fetcher.logger_channel%" }
-      calls:
-         - [setLogger, ['@logger']]
+        class: Kasifi\PdfFetcherBundle\Fetcher
+        tags:
+          -  { name: monolog.logger, channel: "%kasifi_pdf_fetcher.logger_channel%" }
+        calls:
+          - [setLogger, ['@logger']]
+
+    kasifi_pdf_fetcher.document_store:
+        class: Kasifi\PdfFetcherBundle\EventListener\CrawlFinishedListener
+        arguments:
+          - "@filesystem"
+          - "%kasifi_pdf_fetcher.document_store.base_path%"
+        tags:
+            - { name: kernel.event_subscriber }
 
     kasifi_pdf_fetcher.fetch_processors.cipav:
-      class : Kasifi\PdfFetcherBundle\Processor\CipavProcessor
-      arguments:
-        login: "%kasifi_pdf_fetcher.fetch_processors.cipav.login%"
-        password: "%kasifi_pdf_fetcher.fetch_processors.cipav.password%"
-      tags:
-        -  { name: kasifi_pdf_fetcher.fetch_processor }
-        -  { name: monolog.logger, channel: "%kasifi_pdf_fetcher.logger_channel%" }
-      calls:
-         - [setLogger, ['@logger']]
+        class : Kasifi\PdfFetcherBundle\Processor\CipavProcessor
+        arguments:
+          login: "%kasifi_pdf_fetcher.fetch_processors.cipav.login%"
+          password: "%kasifi_pdf_fetcher.fetch_processors.cipav.password%"
+        tags:
+          -  { name: kasifi_pdf_fetcher.fetch_processor }
+          -  { name: monolog.logger, channel: "%kasifi_pdf_fetcher.logger_channel%" }
+        calls:
+          - ["setLogger", ['@logger']]
+          - ["setEventDispatcher", ['@event_dispatcher']]

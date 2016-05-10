@@ -2,10 +2,13 @@
 
 namespace Kasifi\PdfFetcherBundle\Processor;
 
-use GuzzleHttp\Psr7\Request;
+use Goutte\Client;
+use Kasifi\PdfFetcherBundle\Event\CrawlFinishedEvent;
+use Kasifi\PdfFetcherBundle\FetcherEvents;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
-use Goutte\Client;
+use Symfony\Component\DomCrawler\Link;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Class Processor.
@@ -24,9 +27,20 @@ abstract class AbstractProcessor implements LoggerAwareInterface, ProcessorInter
     /** @var array */
     private $storedDocuments;
 
+    /**
+     * @var EventDispatcherInterface
+     */
+    private $eventDispatcher;
+
     public function setLogger(LoggerInterface $logger)
     {
         $this->logger = $logger;
+    }
+
+    public function setEventDispatcher(EventDispatcherInterface $eventDispatcher)
+    {
+
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function getCronFrequency()
@@ -35,20 +49,18 @@ abstract class AbstractProcessor implements LoggerAwareInterface, ProcessorInter
     }
 
     /**
-     * @param string $url
-     *
-     * @param array  $headers
+     * @param Link $link
      *
      * @return string
      */
-    public function downloadDocument($url, $headers = [])
+    public function downloadDocument(Link $link)
     {
-        $guzzleClient = $this->client->getClient();
-        $request = new Request('GET', $url);
-        $this->logger->info('Downloading document', ['url' => $url]);
-        $response = $guzzleClient->send($request, $headers);
-        $this->logger->info('Document downloaded', ['url' => $url]);
-        return $response->getBody()->getContents();
+        $this->logger->info('File download', ['url' => $link->getUri()]);
+        $this->client->click($link);
+        $content = $this->client->getResponse()->getContent();
+        $this->client->back();
+
+        return $content;
     }
 
     public function storeDocument($meta, $content)
@@ -59,9 +71,6 @@ abstract class AbstractProcessor implements LoggerAwareInterface, ProcessorInter
         ];
     }
 
-    /**
-     * @see http://symfony.com/doc/current/components/browser_kit/introduction.html
-     */
     protected function initClient()
     {
         $this->client = new Client();
@@ -81,9 +90,8 @@ abstract class AbstractProcessor implements LoggerAwareInterface, ProcessorInter
 
     protected function dispatchRetrievedEvent()
     {
-        dump($this->getDocuments());
-        throw new \Exception('Implement dispatcher.');
-        // @todo dispatch event
+        $event = new CrawlFinishedEvent($this->getDocuments());
+        $this->eventDispatcher->dispatch(FetcherEvents::CRAWL_FINISHED, $event);
     }
 
     /**
