@@ -52,7 +52,6 @@ class CipavProcessor extends AbstractProcessor implements ProcessorInterface
      */
     public function crawl(Crawler $successPage = null)
     {
-
         // Go to document list
         $link = $successPage->selectLink('Mes Documents')->link();
         $crawler = $this->client->click($link);
@@ -60,11 +59,18 @@ class CipavProcessor extends AbstractProcessor implements ProcessorInterface
         // Parse table
         $crawler->filter('.TableStandard tr')->each(function (Crawler $node, $i) {
             if ($i > 0) {
+
+                // download file
                 $link = $node->selectLink('Télécharger')->link();
-                $content = $this->downloadDocument($link);
+                $documentData = $this->downloadDocument($link);
+                $documentData['filename'] = null; // because many file have the same name
+
+                // add meta
                 $date = $node->filter('td')->first()->text();
                 $name = $node->filter('td')->eq(1)->text();
-                $this->storeDocument(['date' => $date, 'name' => $name], $content);
+                $documentData['meta'] = ['date' => $date, 'name' => $name];
+
+                $this->storeDocument($documentData);
             }
         });
     }

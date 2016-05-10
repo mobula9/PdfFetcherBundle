@@ -7,6 +7,7 @@ use Kasifi\PdfFetcherBundle\Event\CrawlFinishedEvent;
 use Kasifi\PdfFetcherBundle\FetcherEvents;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\BrowserKit\Response;
 use Symfony\Component\DomCrawler\Link;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -55,25 +56,36 @@ abstract class AbstractProcessor implements LoggerAwareInterface, ProcessorInter
      */
     public function downloadDocument(Link $link)
     {
-        $this->logger->info('File download', ['url' => $link->getUri()]);
+        $url = $link->getUri();
+        $this->logger->info('File download', ['url' => $url]);
         $this->client->click($link);
-        $content = $this->client->getResponse()->getContent();
+        /** @var Response $lastResponse */
+        $lastResponse = $this->client->getResponse();
+        $headers = $lastResponse->getHeaders();
+
+        $filename = $this->extractFilenameFromHeaders($headers);
+        $status = $lastResponse->getStatus();
+        $content = $lastResponse->getContent();
         $this->client->back();
 
-        return $content;
+        return [
+            'url'      => $url,
+            'status'   => $status,
+            'headers'  => $headers,
+            'filename' => $filename,
+            'content'  => $content,
+        ];
     }
 
-    public function storeDocument($meta, $content)
+    public function storeDocument($document)
     {
-        $this->storedDocuments[] = [
-            'meta'    => $meta,
-            'content' => $content,
-        ];
+        $this->storedDocuments[] = $document;
     }
 
     protected function initClient()
     {
         $this->client = new Client();
+        $this->client->setHeader('User-Agent', "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36");
     }
 
     public function fetchDocuments()
@@ -90,7 +102,7 @@ abstract class AbstractProcessor implements LoggerAwareInterface, ProcessorInter
 
     protected function dispatchRetrievedEvent()
     {
-        $event = new CrawlFinishedEvent($this->getDocuments());
+        $event = new CrawlFinishedEvent($this->getId(), $this->getDocuments());
         $this->eventDispatcher->dispatch(FetcherEvents::CRAWL_FINISHED, $event);
     }
 
@@ -100,5 +112,32 @@ abstract class AbstractProcessor implements LoggerAwareInterface, ProcessorInter
     private function getDocuments()
     {
         return $this->storedDocuments;
+    }
+
+    /**
+     * @param $headers
+     *
+     * @return string
+     */
+    protected function extractFilenameFromHeaders($headers)
+    {
+        if (isset($headers['Content-Disposition'])) {
+            $contentDisposition = end($headers['Content-Disposition']);
+            $items = array_map('trim', explode(';', $contentDisposition));
+            $filename = null;
+            foreach ($items as $item) {
+                $elements = array_map('trim', explode('=', $item));
+                if (2 == count($elements)) {
+                    list($key, $value) = $elements;
+                    if ('filename' == strtolower($key)) {
+                        $filename = $value;
+                    }
+                }
+            }
+
+            return trim($filename, ' "\'');
+        }
+
+        return null;
     }
 }

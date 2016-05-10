@@ -39,19 +39,33 @@ class CrawlFinishedListener implements EventSubscriberInterface
 
     public function onCrawlFinished(CrawlFinishedEvent $event)
     {
-        if (!$this->fs->exists($this->basePath)) {
-            $this->fs->mkdir($this->basePath);
+        $processorId = $event->getProcessorId();
+        $directoryPath = $this->basePath . '/' . $processorId;
+        if (!$this->fs->exists($directoryPath)) {
+            $this->fs->mkdir($directoryPath);
         }
         $documents = $event->getDocuments();
         foreach ($documents as $document) {
+            if (!in_array($document['status'], [200, 302])) {
+                throw new \Exception('Document ' . $document['url'] . ' download in error ' . $document['status']);
+            }
+
             $content = $document['content'];
-            $filename = Transliterator::urlize(implode(' - ', $document['meta']));
-            $filePath = $this->basePath . '/' . $filename;
+            $filename = $document['filename'];
+            $realFilename = (bool)$filename;
+            if (!$filename) {
+                $filename = Transliterator::urlize(implode(' - ', $document['meta']));
+            }
+
+            $filePath = $directoryPath . '/' . $filename;
             $this->fs->dumpFile($filePath, $content);
-            $file = new File($filePath);
-            $ext = $file->guessExtension();
-            if ($ext) {
-                $this->fs->rename($filePath, $filePath . '.' . $ext);
+
+            if (!$realFilename) {
+                $file = new File($filePath);
+                $ext = $file->guessExtension();
+                if ($ext) {
+                    $this->fs->rename($filePath, $filePath . '.' . $ext, true);
+                }
             }
         }
     }

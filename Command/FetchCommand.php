@@ -2,6 +2,7 @@
 namespace Kasifi\PdfFetcherBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -12,6 +13,7 @@ class FetchCommand extends ContainerAwareCommand
     {
         $this
             ->setName('pdf-fetcher:fetch')
+            ->addArgument('processor', InputArgument::REQUIRED, 'The processor id to use')
             ->setDescription('Fetch a document');
     }
 
@@ -20,7 +22,8 @@ class FetchCommand extends ContainerAwareCommand
         // Init
         $container = $this->getContainer();
         $fetcher = $container->get('kasifi_pdf_fetcher.fetcher');
-        $fetcher->selectProcessor('cipav');
+        $processorId = $input->getArgument('processor');
+        $fetcher->selectProcessor($processorId);
         $io = new SymfonyStyle($input, $output);
 
         $fetcher->fetchDocuments();
