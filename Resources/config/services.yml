@@ -27,13 +27,25 @@ services:
           - ["setEventDispatcher", ['@event_dispatcher']]
 
     kasifi_pdf_fetcher.fetch_processors.sosh:
-            class : Kasifi\PdfFetcherBundle\Processor\SoshProcessor
-            arguments:
-              login: "%kasifi_pdf_fetcher.fetch_processors.sosh.login%"
-              password: "%kasifi_pdf_fetcher.fetch_processors.sosh.password%"
-            tags:
-              -  { name: kasifi_pdf_fetcher.fetch_processor }
-              -  { name: monolog.logger, channel: "%kasifi_pdf_fetcher.logger_channel%" }
-            calls:
-              - ["setLogger", ['@logger']]
-              - ["setEventDispatcher", ['@event_dispatcher']]
+        class : Kasifi\PdfFetcherBundle\Processor\SoshProcessor
+        arguments:
+          login: "%kasifi_pdf_fetcher.fetch_processors.sosh.login%"
+          password: "%kasifi_pdf_fetcher.fetch_processors.sosh.password%"
+        tags:
+          -  { name: kasifi_pdf_fetcher.fetch_processor }
+          -  { name: monolog.logger, channel: "%kasifi_pdf_fetcher.logger_channel%" }
+        calls:
+          - ["setLogger", ['@logger']]
+          - ["setEventDispatcher", ['@event_dispatcher']]
+
+    kasifi_pdf_fetcher.fetch_processors.amazon:
+        class : Kasifi\PdfFetcherBundle\Processor\AmazonProcessor
+        arguments:
+          login: "%kasifi_pdf_fetcher.fetch_processors.amazon.login%"
+          password: "%kasifi_pdf_fetcher.fetch_processors.amazon.password%"
+        tags:
+          -  { name: kasifi_pdf_fetcher.fetch_processor }
+          -  { name: monolog.logger, channel: "%kasifi_pdf_fetcher.logger_channel%" }
+        calls:
+          - ["setLogger", ['@logger']]
+          - ["setEventDispatcher", ['@event_dispatcher']]

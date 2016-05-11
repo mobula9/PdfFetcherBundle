@@ -85,7 +85,10 @@ abstract class AbstractProcessor implements LoggerAwareInterface, ProcessorInter
     protected function initClient()
     {
         $this->client = new Client();
-        $this->client->setHeader('User-Agent', "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36");
+        $this->client->setHeader('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.86 Safari/537.36');
+        $this->client->setHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8');
+        $this->client->setHeader('Accept-Encoding', 'gzip, deflate, sdch');
+        $this->client->setHeader('Accept-Language', 'fr-FR,fr;q=0.8,en-US;q=0.6,en;q=0.4');
     }
 
     public function fetchDocuments()
